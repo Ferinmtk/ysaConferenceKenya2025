@@ -9,6 +9,7 @@ COPY requirements.txt .
 
 # Upgrade pip, install wheel, and install dependencies
 RUN pip install --upgrade pip wheel \
+    && pip install numpy==1.26.4 \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy all project files
@@ -19,5 +20,4 @@ ENV PORT=10000
 EXPOSE $PORT
 
 # Set the command to run Gunicorn with your Flask app
-# Replace 'app:app' with your Flask entry point (filename:app variable)
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
