@@ -1,31 +1,23 @@
-# Use official Python 3.11.8 slim image
+# Use official Python 3.11.8 image
 FROM python:3.11.8-slim
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements first for caching
+# Copy requirements first (for caching)
 COPY requirements.txt .
 
-# Upgrade pip and install dependencies
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip, install wheel, and install dependencies
+RUN pip install --upgrade pip wheel \
+    && pip install --no-cache-dir -r requirements.txt
 
 # Copy all project files
 COPY . .
 
-# Expose port that Render will use
-EXPOSE 10000
+# Expose port (Render sets $PORT automatically)
+ENV PORT=10000
+EXPOSE $PORT
 
-# Run the app with Gunicorn
+# Set the command to run Gunicorn with your Flask app
+# Replace 'app:app' with your Flask entry point (filename:app variable)
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
