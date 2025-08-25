@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ysa-checkins
+    env: python
+    pythonVersion: "3.11"   # Use Python 3.11 for faster builds
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "python app.py"
+    envVars:
+      - key: DB_NAME
+        value: "checkins_eqxa"
+      - key: DB_USER
+        value: "ysacheckins"
+      - key: DB_PASS
+        value: "YXxi0hLeV4netvh6ijYB5qu1CpgRtxOV"
+      - key: DB_HOST
+        value: "dpg-d2m53mvdiees73cio3i0-a/checkins_eqxa"
+      - key: DB_PORT
+        value: "5432"
+      - key: APP_SECRET
+        value: "Sup3rs3cr3ty"
