@@ -5,7 +5,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
 
 import pandas as pd
 
@@ -21,7 +21,7 @@ DB_CONFIG = {
 app = Flask(__name__)
 app.secret_key = os.getenv("APP_SECRET", "change-this-secret")
 
-# Update with your PostgreSQL credentials
+# Update with your PostgreSQL credentials (for SQLAlchemy queries only)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost:5432/your_database'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -33,8 +33,9 @@ class Participant(db.Model):
     name = db.Column(db.String(200), nullable=False)
     stake = db.Column(db.String(200), nullable=False)
     ward_branch = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(200), nullable=False)
-    phone = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(200), nullable=True)
+    phone = db.Column(db.String(100), nullable=True)
+    tshirt_size = db.Column(db.String(50), nullable=True)
 
     def __repr__(self):
         return f"<Participant {self.name}>"
@@ -55,7 +56,8 @@ def init_db():
             stake TEXT NOT NULL,
             ward_branch TEXT NOT NULL,
             email TEXT,
-            phone_number TEXT
+            phone_number TEXT,
+            tshirt_size TEXT
         )
     """)
 
@@ -94,6 +96,10 @@ def normalize_columns(df):
         "phone_no": "phone_number",
         "tel": "phone_number",
         "mobile": "phone_number",
+        "tshirt": "tshirt_size",
+        "t-shirt": "tshirt_size",
+        "tshirt size": "tshirt_size",
+        "shirt size": "tshirt_size",
     }
     df = df.copy()
     df.columns = [c.strip().lower() for c in df.columns]
@@ -102,7 +108,7 @@ def normalize_columns(df):
         if c in colmap:
             mapped[c] = colmap[c]
     df = df.rename(columns=mapped)
-    needed = ["name", "stake", "ward_branch", "email", "phone_number"]
+    needed = ["name", "stake", "ward_branch", "email", "phone_number", "tshirt_size"]
     for need in needed:
         if need not in df.columns:
             df[need] = None
@@ -232,14 +238,16 @@ def get_stakes():
     stakes = db.session.execute("SELECT DISTINCT stake FROM participants ORDER BY stake").fetchall()
     return jsonify([s[0] for s in stakes])
 
+
 # Get wards for a stake
 @app.route("/get_wards/<stake>")
 def get_wards(stake):
     wards = db.session.execute(
-        "SELECT DISTINCT ward FROM participants WHERE stake = :stake ORDER BY ward",
+        "SELECT DISTINCT ward_branch FROM participants WHERE stake = :stake ORDER BY ward_branch",
         {"stake": stake}
     ).fetchall()
     return jsonify([w[0] for w in wards])
+
 
 # Filter participants by stake + ward
 @app.route("/participants/filter", methods=["GET"])
@@ -253,7 +261,7 @@ def filter_participants():
         query += " AND stake = :stake"
         params["stake"] = stake
     if ward:
-        query += " AND ward = :ward"
+        query += " AND ward_branch = :ward"
         params["ward"] = ward
 
     results = db.session.execute(query, params).fetchall()
@@ -295,11 +303,12 @@ def upload():
                     ward = (r["ward_branch"] or "").strip()
                     email = r["email"] if pd.notna(r["email"]) else None
                     phone = r["phone_number"] if pd.notna(r["phone_number"]) else None
+                    tshirt = r["tshirt_size"] if pd.notna(r["tshirt_size"]) else None
                     if name and stake and ward:
                         cur.execute("""
-                            INSERT INTO participants (name, stake, ward_branch, email, phone_number)
-                            VALUES (%s, %s, %s, %s, %s)
-                        """, (name, stake, ward, email, phone))
+                            INSERT INTO participants (name, stake, ward_branch, email, phone_number, tshirt_size)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                        """, (name, stake, ward, email, phone, tshirt))
                         inserted += 1
 
                 conn.commit()
@@ -326,7 +335,7 @@ def export_csv():
 
     output = io.StringIO()
     w = csv.writer(output)
-    header = ["id", "name", "stake", "ward_branch", "email", "phone_number"]
+    header = ["id", "name", "stake", "ward_branch", "email", "phone_number", "tshirt_size"]
     if only_day in ("1", "2", "3"):
         header.append(f"day{only_day}")
     else:
@@ -334,7 +343,7 @@ def export_csv():
     w.writerow(header)
 
     for r in rows:
-        base = [r["id"], r["name"], r["stake"], r["ward_branch"], r["email"], r["phone_number"]]
+        base = [r["id"], r["name"], r["stake"], r["ward_branch"], r["email"], r["phone_number"], r["tshirt_size"]]
         if only_day == "1":
             base.append(1 if r["id"] in day1 else 0)
         elif only_day == "2":
