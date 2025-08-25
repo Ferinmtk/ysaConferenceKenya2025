@@ -1,0 +1,16 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": true
+                }
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "YsaConference2025",
+            "connectString": "postgresql://ysaconference_user:SZyzRq6EbdCnZ8ebqm4GuhDqOQ1Hs82m@dpg-d2m4gvvdiees73ci4pfg-a.frankfurt-postgres.render.com/ysaconference"
+        }
+    ]
+}

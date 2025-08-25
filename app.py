@@ -6,20 +6,26 @@ import psycopg2.extras
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify
-
 import pandas as pd
+from dotenv import load_dotenv
+
+# ---------- Load .env ----------
+load_dotenv()  # loads environment variables from a .env file
+
 
 # ---------- Config ----------
 DB_CONFIG = {
-    "dbname": os.getenv("DB_NAME", "checkins"),
-    "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASS", "fer618639"),
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": os.getenv("DB_PORT", "5432"),
+    "dbname": os.getenv("DB_NAME"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASS"),
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT"),
 }
 
+
 app = Flask(__name__)
-app.secret_key = os.getenv("APP_SECRET", "change-this-secret")
+app.secret_key = os.getenv("APP_SECRET")
+
 
 # Update with your PostgreSQL credentials (for SQLAlchemy queries only)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost:5432/your_database'
