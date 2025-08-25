@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YSA Conference Check-in</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.5;
+    }
+    h2 { color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    input, select, button {
+      padding: 8px;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover { background-color: #45a049; }
+    .message { margin: 15px 0; font-weight: bold; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+  <script>
+    function updateWards() {
+      let stakeSelect = document.getElementById("stake");
+      let wardSelect = document.getElementById("ward");
+      let stake = stakeSelect.value;
+
+      // Reset ward dropdown
+      wardSelect.innerHTML = '<option value="">-- Select Ward/Branch --</option>';
+
+      if (stake && stakeData[stake]) {
+        stakeData[stake].forEach(ward => {
+          let option = document.createElement("option");
+          option.value = ward;
+          option.textContent = ward;
+          wardSelect.appendChild(option);
+        });
+        wardSelect.disabled = false;
+      } else {
+        wardSelect.disabled = true;
+      }
+    }
+  </script>
+</head>
+<body>
+  <h2>YSA Conference Check-in</h2>
+
+  {% if message %}
+    <p class="message success">{{ message }}</p>
+  {% endif %}
+  {% if error %}
+    <p class="message error">{{ error }}</p>
+  {% endif %}
+
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Name:</label>
+      <input id="name" type="text" name="name" required>
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input id="email" type="email" name="email">
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone:</label>
+      <input id="phone" type="text" name="phone">
+    </div>
+
+    <div class="form-group">
+      <label for="stake">Stake:</label>
+      <select id="stake" name="stake" onchange="updateWards()" required>
+        <option value="">-- Select Stake --</option>
+        {% for stake in stakes %}
+          <option value="{{ stake }}">{{ stake }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="ward">Ward/Branch:</label>
+      <select id="ward" name="ward" required disabled>
+        <option value="">-- Select Ward/Branch --</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <button type="submit">Check In</button>
+    </div>
+  </form>
+
+  <script>
+    // Stake → Ward mapping comes from Flask
+    const stakeData = {{ stake_structure|tojson }};
+  </script>
+</body>
+</html>

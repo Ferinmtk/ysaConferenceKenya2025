@@ -1,0 +1,18 @@
+-- participants table
+CREATE TABLE participants (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    stake TEXT NOT NULL,
+    ward_branch TEXT NOT NULL,
+    email TEXT UNIQUE,
+    phone_number TEXT UNIQUE
+);
+
+-- checkins table
+CREATE TABLE checkins (
+    id SERIAL PRIMARY KEY,
+    participant_id INT NOT NULL,
+    event_day INT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (participant_id) REFERENCES participants(id) ON DELETE CASCADE
+);

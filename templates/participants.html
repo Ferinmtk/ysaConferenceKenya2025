@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Participants</h2>
+
+<form class="filters" method="get" action="{{ url_for('participants') }}">
+  <input type="text" name="q" placeholder="Search name, stake, ward, phone" value="{{ q }}">
+  <select name="stake">
+    <option value="">All Stakes</option>
+    {% for s in stakes %}
+      <option value="{{ s }}" {% if s==selected_stake %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <select name="ward">
+    <option value="">All Wards/Branches</option>
+    {% for w in wards %}
+      <option value="{{ w }}" {% if w==selected_ward %}selected{% endif %}>{{ w }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn" type="submit">Filter</button>
+  <a class="btn" href="{{ url_for('participants') }}">Clear</a>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Name</th>
+      <th>Stake</th>
+      <th>Ward/Branch</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>T-shirt Size</th>
+      <th>Day 1</th>
+      <th>Day 2</th>
+      <th>Day 3</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in participants %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ p['name'] }}</td>
+        <td>{{ p['stake'] }}</td>
+        <td>{{ p['ward_branch'] }}</td>
+        <td>{{ p['email'] or '' }}</td>
+        <td>{{ p['phone_number'] or '' }}</td>
+        <td>{{ p['tshirt_size'] or '' }}</td>
+
+        <td>
+          <form method="post" action="{{ url_for('toggle_checkin', participant_id=p['id'], day=1) }}">
+            {% if p['id'] in day1_set %}
+              <button class="btn warn" type="submit">Undo</button>
+            {% else %}
+              <button class="btn success" type="submit">Check-in</button>
+            {% endif %}
+          </form>
+        </td>
+
+        <td>
+          <form method="post" action="{{ url_for('toggle_checkin', participant_id=p['id'], day=2) }}">
+            {% if p['id'] in day2_set %}
+              <button class="btn warn" type="submit">Undo</button>
+            {% else %}
+              <button class="btn success" type="submit">Check-in</button>
+            {% endif %}
+          </form>
+        </td>
+
+        <td>
+          <form method="post" action="{{ url_for('toggle_checkin', participant_id=p['id'], day=3) }}">
+            {% if p['id'] in day3_set %}
+              <button class="btn warn" type="submit">Undo</button>
+            {% else %}
+              <button class="btn success" type="submit">Check-in</button>
+            {% endif %}
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

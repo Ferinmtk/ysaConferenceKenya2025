@@ -1,0 +1,41 @@
+:root{
+  --bg:#0b1220; --card:#121a2b; --text:#e7edf7; --muted:#8ea0bf;
+  --accent:#59a6ff; --success:#33d39e; --warn:#f7c948; --border:rgba(255,255,255,.12);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#0b1220,#0e1628 40%,#0b1220);color:var(--text)}
+
+.container{max-width:1100px;margin:0 auto;padding:20px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.topbar h1{font-size:20px;margin:0}
+.topbar nav a{color:var(--accent);margin-left:12px;text-decoration:none}
+.topbar nav a:hover{text-decoration:underline}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+
+.btn{display:inline-block;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);text-decoration:none;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.08)}
+.btn.success{background:linear-gradient(180deg,#33d39e,#24b584);border-color:#17946a}
+.btn.warn{background:linear-gradient(180deg,#f7ce5b,#e9b949);border-color:#d7a63c;color:#111}
+
+input[type="text"], input[type="file"], select{
+  width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text)
+}
+
+.filters{display:grid;grid-template-columns:1fr 220px 220px auto auto;gap:8px;margin-bottom:10px}
+.upload{display:grid;grid-template-columns:1fr 220px auto;gap:10px;align-items:end}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{padding:14px;border:1px solid var(--border);border-radius:14px;background:rgba(255,255,255,.03)}
+.stat .label{color:var(--muted);font-size:12px}
+.stat .value{font-size:26px;font-weight:700}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;overflow:hidden;border-radius:12px}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+tr:hover{background:rgba(255,255,255,.03)}
+
+.alert{margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border)}
+.alert.ok{background:rgba(51,211,158,.1);border-color:rgba(51,211,158,.35)}
+.alert.bad{background:rgba(255,120,120,.12);border-color:rgba(255,120,120,.35)}
+
+.muted{color:var(--muted);font-size:12px;text-align:center;margin-top:14px}

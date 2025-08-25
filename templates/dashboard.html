@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+
+<div class="stats">
+  <div class="stat">
+    <div class="label">Total Registered</div>
+    <div class="value">{{ total }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Checked In — Day 1</div>
+    <div class="value">{{ by_day[1] }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Checked In — Day 2</div>
+    <div class="value">{{ by_day[2] }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Checked In — Day 3</div>
+    <div class="value">{{ by_day[3] }}</div>
+  </div>
+</div>
+
+<h3 style="margin-top:16px;">By Stake (Registered)</h3>
+<table>
+  <thead>
+    <tr><th>Stake</th><th>Total</th></tr>
+  </thead>
+  <tbody>
+    {% for s in stakes %}
+      <tr>
+        <td>{{ s['stake'] }}</td>
+        <td>{{ s['total'] }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div style="margin-top:12px;">
+  <a class="btn" href="{{ url_for('participants') }}">Go to Participants</a>
+  <a class="btn" href="{{ url_for('upload') }}">Upload Participants</a>
+  <a class="btn" href="{{ url_for('export_csv') }}">Export CSV</a>
+</div>
+{% endblock %}
