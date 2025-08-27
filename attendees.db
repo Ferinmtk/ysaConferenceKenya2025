@@ -4,8 +4,8 @@ CREATE TABLE participants (
     name TEXT NOT NULL,
     stake TEXT NOT NULL,
     ward_branch TEXT NOT NULL,
-    email TEXT UNIQUE,
-    phone_number TEXT UNIQUE
+    email TEXT UNIQUE NOT NULL,   -- enforce unique email
+    phone_number TEXT
 );
 
 -- checkins table
