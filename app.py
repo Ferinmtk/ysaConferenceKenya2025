@@ -161,10 +161,16 @@ def participants():
     ward = (request.args.get("ward") or "").strip()
     day = request.args.get("day")
 
+    # Pagination setup
+    page = int(request.args.get("page", 1))
+    per_page = 50  # you can change this to 100 if you prefer
+    offset = (page - 1) * per_page
+
     conn = get_conn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    sql = "SELECT * FROM participants WHERE 1=1"
+    # Base query
+    sql = "FROM participants WHERE 1=1"
     params = []
     if q:
         sql += " AND (lower(name) LIKE %s OR lower(stake) LIKE %s OR lower(ward_branch) LIKE %s OR phone_number LIKE %s)"
@@ -176,15 +182,23 @@ def participants():
     if ward:
         sql += " AND ward_branch = %s"
         params.append(ward)
-    sql += " ORDER BY name ASC LIMIT 500"
 
-    cur.execute(sql, params)
+    # Count total results for pagination
+    count_sql = "SELECT COUNT(*) " + sql
+    cur.execute(count_sql, params)
+    total = cur.fetchone()[0]
+
+    # Fetch only one page of results
+    query_sql = "SELECT * " + sql + " ORDER BY name ASC LIMIT %s OFFSET %s"
+    cur.execute(query_sql, params + [per_page, offset])
     rows = cur.fetchall()
 
+    # Check-in status sets
     day1_set = get_checkin_status_map(cur, 1)
     day2_set = get_checkin_status_map(cur, 2)
     day3_set = get_checkin_status_map(cur, 3)
 
+    # Stakes and wards for filters
     cur.execute("SELECT DISTINCT stake FROM participants ORDER BY stake")
     stakes = [r[0] for r in cur.fetchall()]
     cur.execute("SELECT DISTINCT ward_branch FROM participants ORDER BY ward_branch")
@@ -209,7 +223,11 @@ def participants():
         day1_set=day1_set,
         day2_set=day2_set,
         day3_set=day3_set,
+        page=page,
+        total_pages=(total + per_page - 1) // per_page
     )
+
+
 
 
 @app.route("/toggle/<int:participant_id>/<int:day>", methods=["POST"])
@@ -310,33 +328,48 @@ def upload():
                 else:
                     raise ValueError("Unsupported file type")
 
+                # normalize column names
                 df = normalize_columns(df)
+
                 conn = get_conn()
                 cur = conn.cursor()
 
+                # Replace mode clears out the DB
                 if mode == "replace":
                     cur.execute("DELETE FROM checkins")
                     cur.execute("DELETE FROM participants")
 
                 inserted = 0
+                skipped = 0
+
                 for _, r in df.iterrows():
-                    name = (r["name"] or "").strip()
-                    stake = (r["stake"] or "").strip()
-                    ward = (r["ward_branch"] or "").strip()
-                    email = r["email"] if pd.notna(r["email"]) else None
-                    phone = r["phone_number"] if pd.notna(r["phone_number"]) else None
-                    tshirt = r["tshirt_size"] if pd.notna(r["tshirt_size"]) else None
+                    # Safely cast to string & strip, or set None
+                    name = str(r["name"]).strip() if pd.notna(r["name"]) else ""
+                    stake = str(r["stake"]).strip() if pd.notna(r["stake"]) else ""
+                    ward = str(r["ward_branch"]).strip() if pd.notna(r["ward_branch"]) else ""
+
+                    email = str(r["email"]).strip() if pd.notna(r["email"]) else None
+                    phone = str(r["phone_number"]).strip() if pd.notna(r["phone_number"]) else None
+                    tshirt = str(r["tshirt_size"]).strip() if pd.notna(r["tshirt_size"]) else None
+
                     if name and stake and ward:
-                        cur.execute("""
-                            INSERT INTO participants (name, stake, ward_branch, email, phone_number, tshirt_size)
-                            VALUES (%s, %s, %s, %s, %s, %s)
-                        """, (name, stake, ward, email, phone, tshirt))
-                        inserted += 1
+                        try:
+                            cur.execute("""
+                                INSERT INTO participants (name, stake, ward_branch, email, phone_number, tshirt_size)
+                                VALUES (%s, %s, %s, %s, %s, %s)
+                            """, (name, stake, ward, email, phone, tshirt))
+                            inserted += 1
+                        except Exception:
+                            # duplicate or constraint violation → skip instead of crash
+                            skipped += 1
 
                 conn.commit()
                 cur.close()
                 conn.close()
+
                 message = f"Uploaded {inserted} participants ({'replaced' if mode=='replace' else 'appended'})."
+                if skipped:
+                    message += f" Skipped {skipped} duplicates."
             except Exception as e:
                 error = f"Upload failed: {e}"
 

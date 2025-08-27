@@ -38,7 +38,7 @@
   <tbody>
     {% for p in participants %}
       <tr>
-        <td>{{ loop.index }}</td>
+        <td>{{ loop.index + ((page-1) * 500) }}</td>
         <td>{{ p['name'] }}</td>
         <td>{{ p['stake'] }}</td>
         <td>{{ p['ward_branch'] }}</td>
@@ -79,4 +79,15 @@
     {% endfor %}
   </tbody>
 </table>
+
+<!-- Pagination Controls -->
+<div class="pagination">
+  {% if page > 1 %}
+    <a class="btn" href="{{ url_for('participants', page=page-1, q=q, stake=selected_stake, ward=selected_ward) }}">Previous</a>
+  {% endif %}
+  <span>Page {{ page }} of {{ total_pages }}</span>
+  {% if page < total_pages %}
+    <a class="btn" href="{{ url_for('participants', page=page+1, q=q, stake=selected_stake, ward=selected_ward) }}">Next</a>
+  {% endif %}
+</div>
 {% endblock %}
