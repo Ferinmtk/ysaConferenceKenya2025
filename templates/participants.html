@@ -38,7 +38,7 @@
   <tbody>
     {% for p in participants %}
       <tr>
-        <td>{{ loop.index + ((page-1) * 500) }}</td>
+        <td>{{ loop.index + ((page-1) * 50) }}</td>
         <td>{{ p['name'] }}</td>
         <td>{{ p['stake'] }}</td>
         <td>{{ p['ward_branch'] }}</td>
